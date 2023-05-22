@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:34:03 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/19 13:00:28 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/22 11:50:56 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ int	main(int argc, char **argv, char **envp)
 	act.__sigaction_u.__sa_handler = &sig_handle;
 	sigaction(SIGINT, &act, NULL);
 	env_head = env_list_init(envp, NULL, NULL, NULL);
+	//test_print_env(env_head);
 	while (1)
 	{
 		line = readline("minishell> ");
@@ -56,4 +57,58 @@ void	sig_handle(int signum)
 	}
 	else
 		return ;
+}
+
+void	test_print_env(t_env *env_head)
+{
+	t_env	*env_iter;
+
+	env_iter = env_head;
+	while (env_iter)
+	{
+		printf("env|key=%s|value=%s\n", env_iter->name, env_iter->content);
+		env_iter = env_iter->next;
+	}
+}
+
+void	test_print_tokens(t_token *token_head)
+{
+	t_token	*token_iter;
+
+	token_iter = token_head;
+	while (token_iter)
+	{
+		printf("token_type=%d|token_value=%s|prev=%p|current=%p|next=%p\n",
+			token_iter->type, token_iter->str,
+			token_iter->prev, token_iter, token_iter->next);
+		token_iter = token_iter->next;
+	}
+}
+
+void test_print_cmds(t_cmd *cmd_head)
+{
+	t_cmd *cmd_iter;
+	t_token	*token_iter;
+
+	cmd_iter = cmd_head;
+	while (cmd_iter)
+	{
+		token_iter = cmd_iter->words;
+		while (token_iter)
+		{
+			printf("token_type=%d|token_value=%s|prev=%p|current=%p|next=%p\n",
+				token_iter->type, token_iter->str,
+				token_iter->prev, token_iter, token_iter->next);
+			token_iter = token_iter->next;
+		}
+		token_iter = cmd_iter->redirs;
+		while (token_iter)
+		{
+			printf("token_type=%d|token_value=%s|prev=%p|current=%p|next=%p\n",
+				token_iter->type, token_iter->str,
+				token_iter->prev, token_iter, token_iter->next);
+			token_iter = token_iter->next;
+		}
+		cmd_iter = cmd_iter->next;
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/19 17:36:30 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/22 11:51:04 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,6 @@
 # include "libft.h"
 # include "readline.h"
 # include "history.h"
-// # include "../libft/libft.h"
-// # include "../readline/include/readline/readline.h"
-// # include "../readline/include/readline/history.h"
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
@@ -29,10 +26,10 @@
 
 typedef struct s_env_set
 {
-	int	number;
-	struct s_env *head;
-	struct s_env *tail;
-}				t_env_set;
+	int				number;
+	struct s_env	*head;
+	struct s_env	*tail;
+}					t_env_set;
 
 typedef struct s_env
 {
@@ -82,45 +79,48 @@ typedef struct s_here
 	struct s_here	*next;
 }					t_here;
 
-// typedef struct s_redir
-// {
-// 	t_redir_type	r_type;  // 0 : infile<, 1 : outfile>, 2 : heredoc<<, 3 : append>>
-// 	char			*file_name;  //type next token
-// }	t_redir;
-
-// typedef struct s_ast
-// {
-
-// 	t_redir			*redir;
-// 	t_cmd			*cmd;
-// 	struct s_ast	*left;
-// 	struct s_ast	*right;  //left == NULL && right == NULL (->end node)
-// }	t_ast;
-
 t_env	*new_env_node(char *name, char *content, t_env *prev);
 void	split_name_content(char *envp, char **name, char **content);
 t_env	*env_list_init(char **envp, t_env *env_head, t_env *temp, t_env *new);
 
-void	sig_handle(int signum);
+void sig_handle(int signum);
 
-int		shell_op(char *line, t_env *env_head);
-t_token	*token_list_init(char *str, t_token *token_head, t_token *temp, t_token *new);
-t_cmd	*parser(t_token *token_head, t_env *env_head);
-t_here	*repeat_heredocs(t_cmd *cmd_head);
+int shell_op(char *line, t_env *env_head);
+
+t_token *token_list_init(char *str, t_token *token_head, t_token *temp, t_token *new);
+void merge_redir(t_token **token_head);
+t_token_type convert_type(char *str);
+
+t_cmd *parser(t_token *token_head, t_env *env_head);
+t_cmd *new_cmd_node(void);
+
+t_here *repeat_heredocs(t_cmd *cmd_head);
 t_here *do_a_heredoc(char *limiter);
 char *nexist_name(void);
 void write_heredoc(int fd, char *limiter_nl);
 t_here *free_n_return(char *str);
 t_here *clear_here_n_return(t_here *here_head);
-void	here_add_bottom(t_here **here_head, t_here *here_doc);
+void here_add_bottom(t_here **here_head, t_here *here_doc);
 void update_redirs(t_token *redirs, t_here *here_doc);
 
-int		exec_cmds(t_cmd *cmd_head, t_env *env_head);
-void 	clear_this_line(t_cmd *cmd_head, t_here *here_head);
+int exec_cmds(t_cmd *cmd_head, t_env *env_head);
+int open_pipe(t_cmd *cmd);
+int child(t_cmd *cmd, t_env *env_head);
+char **words_lst_to_arr(t_cmd *cmd);
+char *find_cmd_path(char *cmd, char **envp);
+char **find_path_env(char **envp, char **cmd);
+char *check_cmd_path(char *cmd, char **dirs);
+void free_double_ptr(char **ptr);
+int parent(int pid, t_cmd *cmd_head);
+void clear_this_line(t_cmd *cmd_head, t_here *here_head);
+int perror_return(char *str, int exit_code);
 
-char	**env_conv_arr(t_env *env_head);
-void	list_free(t_env *head);
-void	arr2d_free(char **arr);
+char **env_conv_arr(t_env *env_head);
+void list_free(t_env *head);
+void arr2d_free(char **arr);
 
+void test_print_env(t_env *env_head);
+void test_print_tokens(t_token *token_head);
+void test_print_cmds(t_cmd *cmd_head);
 
 #endif

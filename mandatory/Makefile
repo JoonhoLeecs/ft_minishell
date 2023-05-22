@@ -2,7 +2,7 @@ NAME = minishell
 #NAME = ../minishell
 
 CC = cc
-CFLAGS = -Werror -Wall -Wextra
+CFLAGS = -Werror -Wall -Wextra -g
 LDFLAGS = 	-L../libft -lft \
 			-L../readline/lib -lreadline \
 			-L../readline/lib -lhistory
@@ -32,10 +32,11 @@ minishell.c \
 minishell_utils.c \
 env_init.c \
 env_conv_arr.c \
-planting_tree.c \
 token_init.c \
 shell_op.c \
-heredoc.c
+parser.c \
+heredoc.c \
+find_cmd_path.c
 
 MANDATORY_OBJS = $(MANDATORY_SRCS:.c=.o)
 
