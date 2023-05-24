@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/22 11:51:04 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/24 20:54:27 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 # include <fcntl.h>
 # include <stdlib.h>
 # include <signal.h>
+# include <limits.h>
+# include <errno.h>
 
 typedef struct s_env_set
 {
@@ -34,7 +36,7 @@ typedef struct s_env_set
 typedef struct s_env
 {
 	char			*name;
-	char			*content;
+	char			*value;
 	struct s_env	*next;
 	struct s_env	*prev;
 }					t_env;
@@ -79,13 +81,15 @@ typedef struct s_here
 	struct s_here	*next;
 }					t_here;
 
-t_env	*new_env_node(char *name, char *content, t_env *prev);
-void	split_name_content(char *envp, char **name, char **content);
+t_env	*new_env_node(char *name, char *value, t_env *prev);
+void	split_name_value(char *envp, char **name, char **value);
+char *env_find_name(char *envp);
+char *env_find_value(char *envp);
 t_env	*env_list_init(char **envp, t_env *env_head, t_env *temp, t_env *new);
 
 void sig_handle(int signum);
 
-int shell_op(char *line, t_env *env_head);
+int shell_op(char *line, t_env **env_head);
 
 t_token *token_list_init(char *str, t_token *token_head, t_token *temp, t_token *new);
 void merge_redir(t_token **token_head);
@@ -103,9 +107,9 @@ t_here *clear_here_n_return(t_here *here_head);
 void here_add_bottom(t_here **here_head, t_here *here_doc);
 void update_redirs(t_token *redirs, t_here *here_doc);
 
-int exec_cmds(t_cmd *cmd_head, t_env *env_head);
+int exec_cmds(t_cmd *cmd_head, t_env **env_head);
 int open_pipe(t_cmd *cmd);
-int child(t_cmd *cmd, t_env *env_head);
+int child(t_cmd *cmd, t_env **env_head);
 char **words_lst_to_arr(t_cmd *cmd);
 char *find_cmd_path(char *cmd, char **envp);
 char **find_path_env(char **envp, char **cmd);
@@ -118,6 +122,19 @@ int perror_return(char *str, int exit_code);
 char **env_conv_arr(t_env *env_head);
 void list_free(t_env *head);
 void arr2d_free(char **arr);
+
+int is_builtin(char *cmd);
+int run_builtin(t_cmd *cmd, t_env **env_head);
+int ft_echo(char **argv);
+int ft_cd(t_cmd *cmd, t_env *env_head);
+int ft_pwd(void);
+int ft_export(t_cmd *cmd, t_env *env_head);
+int ft_unset(t_cmd *cmd, t_env **env_head);
+int ft_env(t_env *env_head);
+int ft_exit(t_cmd *cmd, int exit_code);
+int env_set_value(t_env *env_head, char *name, char *value);
+char *env_get_value(t_env *env_head, char *name);
+int env_remove(t_env **env_head, char *name);
 
 void test_print_env(t_env *env_head);
 void test_print_tokens(t_token *token_head);

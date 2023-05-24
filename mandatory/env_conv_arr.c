@@ -3,23 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   env_conv_arr.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: woosekim <woosekim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 19:50:32 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/15 20:19:16 by woosekim         ###   ########.fr       */
+/*   Updated: 2023/05/23 20:24:35 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	input_name_content(t_env *env_head, char *env_arr, int size)
+void	input_name_value(t_env *env_head, char *env_arr, int size)
 {
 	int		i;
 	char	*name_equal;
 	char	*str_total;
 
 	name_equal = ft_strjoin(env_head->name, "=");
-	str_total = ft_strjoin(name_equal, env_head->content);
+	str_total = ft_strjoin(name_equal, env_head->value);
 	i = 0;
 	while (i < size - 1)
 	{
@@ -49,9 +49,9 @@ char	**env_conv_arr(t_env *env_head)
 	i = 0;
 	while (env_head != NULL)
 	{
-		size = ft_strlen(env_head->name) + ft_strlen(env_head->content) + 2;
+		size = ft_strlen(env_head->name) + ft_strlen(env_head->value) + 2;
 		env_arr[i] = (char *)malloc(sizeof(char) * size);
-		input_name_content(env_head, env_arr[i], size);
+		input_name_value(env_head, env_arr[i], size);
 		env_head = env_head->next;
 		i++;
 	}

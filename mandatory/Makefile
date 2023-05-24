@@ -36,7 +36,8 @@ token_init.c \
 shell_op.c \
 parser.c \
 heredoc.c \
-find_cmd_path.c
+find_cmd_path.c \
+builtin.c
 
 MANDATORY_OBJS = $(MANDATORY_SRCS:.c=.o)
 

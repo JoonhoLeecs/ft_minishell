@@ -6,13 +6,13 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 08:37:24 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/22 12:51:19 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/24 20:55:53 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	shell_op(char *line, t_env *env_head)
+int	shell_op(char *line, t_env **env_head)
 {
 	t_token	*token_head;
 	t_cmd	*cmd_head;
@@ -25,7 +25,7 @@ int	shell_op(char *line, t_env *env_head)
 		return (1);
 	// test_print_tokens(token_head);
 	// create command nodes and rearrange token nodes into sublist of words and redirs
-	cmd_head = parser(token_head, env_head);
+	cmd_head = parser(token_head, *env_head);
 	if (cmd_head == NULL)
 		return (1);
 	// execute here_docs and replace them into input redirection with heredocs
@@ -39,12 +39,10 @@ int	shell_op(char *line, t_env *env_head)
 	return (exit_code);
 }
 
-int	exec_cmds(t_cmd *cmd_head, t_env *env_head)
+int	exec_cmds(t_cmd *cmd_head, t_env **env_head)
 {
 	t_cmd	*cmd_iter;
 	int		pid;
-
-	// printf("exec hererE??");
 
 	cmd_iter = cmd_head;
 	while (cmd_iter)
@@ -52,6 +50,34 @@ int	exec_cmds(t_cmd *cmd_head, t_env *env_head)
 		if (cmd_iter->next != NULL)
 			if (open_pipe(cmd_iter) == -1)
 				return (perror_return("pipe", 1));
+		if (cmd_iter->prev == NULL && cmd_iter->next == NULL
+			&& (ft_strcmp(cmd_iter->words->str, "cd") == 0))
+		{
+			cmd_iter->argv = words_lst_to_arr(cmd_iter);
+			cmd_iter->cmd_path = ft_strdup(cmd_iter->argv[0]);
+			return (ft_cd(cmd_iter, *env_head));
+		}
+		if (cmd_iter->prev == NULL && cmd_iter->next == NULL
+			&& (ft_strcmp(cmd_iter->words->str, "unset") == 0))
+		{
+			cmd_iter->argv = words_lst_to_arr(cmd_iter);
+			cmd_iter->cmd_path = ft_strdup(cmd_iter->argv[0]);
+			return (ft_unset(cmd_iter, env_head));
+		}
+		if (cmd_iter->prev == NULL && cmd_iter->next == NULL
+			&& (ft_strcmp(cmd_iter->words->str, "export") == 0))
+		{
+			cmd_iter->argv = words_lst_to_arr(cmd_iter);
+			cmd_iter->cmd_path = ft_strdup(cmd_iter->argv[0]);
+			return (ft_export(cmd_iter, *env_head));
+		}
+		if (cmd_iter->prev == NULL && cmd_iter->next == NULL
+			&& (ft_strcmp(cmd_iter->words->str, "exit") == 0))
+		{
+			cmd_iter->argv = words_lst_to_arr(cmd_iter);
+			cmd_iter->cmd_path = ft_strdup(cmd_iter->argv[0]);
+			return (ft_exit(cmd_iter, 0));
+		}
 		pid = fork();
 		if (pid == -1)
 			return (perror_return("fork", 1));
@@ -75,13 +101,11 @@ int	open_pipe(t_cmd *cmd)
 	return (0);
 }
 
-int	child(t_cmd *cmd, t_env *env_head)
+int	child(t_cmd *cmd, t_env **env_head)
 {
 	t_token	*token_iter;
 	int		fd;
 	char	**envp;
-
-	printf("hererE??");
 
 	if (cmd->prev != NULL)
 	{
@@ -127,7 +151,9 @@ int	child(t_cmd *cmd, t_env *env_head)
 	cmd->argv = words_lst_to_arr(cmd);
 	if (cmd->argv == 0)
 		return (perror_return("malloc", 1));
-	envp = env_conv_arr(env_head);
+	if (is_builtin(cmd->argv[0]))
+		return (run_builtin(cmd, env_head));
+	envp = env_conv_arr(*env_head);
 	if (envp == 0)
 		return (perror_return("malloc", 1));
 	cmd->cmd_path = find_cmd_path(cmd->argv[0], envp);
@@ -175,7 +201,7 @@ int	parent(int pid, t_cmd *cmd_head)
 char	**words_lst_to_arr(t_cmd *cmd)
 {
 	t_token	*token_iter;
-	t_token	*token_tmp;
+	// t_token	*token_tmp;
 	int		n;
 	char	**argv;
 	int		i;
@@ -195,9 +221,9 @@ char	**words_lst_to_arr(t_cmd *cmd)
 	while (i < n)
 	{
 		argv[i] = token_iter->str;
-		token_tmp = token_iter;
+		// token_tmp = token_iter;
 		token_iter = token_iter->next;
-		free(token_tmp);
+		// free(token_tmp);
 		i++;
 	}
 	argv[i] = NULL;
@@ -234,12 +260,15 @@ void	clear_this_line(t_cmd *cmd_head, t_here *here_head)
 			free(token_to_clear->str);
 			free(token_to_clear);
 		}
-		free(cmd_to_clear->cmd_path);
-		free(cmd_to_clear->argv);
+		if (cmd_to_clear->cmd_path != NULL)
+			free(cmd_to_clear->cmd_path);
+		if (cmd_to_clear->argv != NULL)
+			free(cmd_to_clear->argv);
 	}
 	here_iter = here_head;
 	while (here_iter)
 	{
+		unlink(here_iter->filename);
 		here_to_clear = here_iter;
 		here_iter = here_iter->next;
 		free(here_to_clear->filename);

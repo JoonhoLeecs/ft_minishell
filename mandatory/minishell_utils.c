@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell_utils.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: woosekim <woosekim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 19:22:54 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/17 14:46:17 by woosekim         ###   ########.fr       */
+/*   Updated: 2023/05/23 20:21:27 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	list_free(t_env *head)
 	{
 		temp = head->next;
 		free(head->name);
-		free(head->content);
+		free(head->value);
 		free(head);
 		head = temp;
 	}

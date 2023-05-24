@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/27 13:32:16 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/19 16:26:03 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/22 13:14:52 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ t_here	*do_a_heredoc(char *limiter)
 {
 	int		fd;
 	char	*here_filename;
-	char	*limiter_nl;
 	t_here	*heredoc_node;
 
 	here_filename = nexist_name();
@@ -54,14 +53,7 @@ t_here	*do_a_heredoc(char *limiter)
 	fd = open(here_filename, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	if (fd == -1)
 		return (free_n_return(here_filename));
-	limiter_nl = ft_strjoin(limiter, "\n");
-	if (limiter_nl == 0)
-	{
-		close (fd);
-		return (free_n_return(here_filename));
-	}
-	write_heredoc(fd, limiter_nl);
-	free(limiter_nl);
+	write_heredoc(fd, limiter);
 	close(fd);
 	heredoc_node = (t_here *) malloc (sizeof (t_here));
 	if (heredoc_node == 0)
@@ -109,7 +101,7 @@ void	write_heredoc(int fd, char *limiter_nl)
 			free(line);
 			break ;
 		}
-		ft_putstr_fd(line, fd);
+		ft_putendl_fd(line, fd);
 		free(line);
 	}
 }
