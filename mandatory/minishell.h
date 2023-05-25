@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/24 20:54:27 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/25 15:23:10 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,15 @@
 # define READLINE_LIBRARY
 
 # include <stdio.h>
-# include "libft.h"
-# include "readline.h"
-# include "history.h"
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
 # include <signal.h>
 # include <limits.h>
 # include <errno.h>
+# include "libft.h"
+# include "readline.h"
+# include "history.h"
 
 typedef struct s_env_set
 {
@@ -132,6 +132,7 @@ int ft_export(t_cmd *cmd, t_env *env_head);
 int ft_unset(t_cmd *cmd, t_env **env_head);
 int ft_env(t_env *env_head);
 int ft_exit(t_cmd *cmd, int exit_code);
+int is_valid_name(char *str);
 int env_set_value(t_env *env_head, char *name, char *value);
 char *env_get_value(t_env *env_head, char *name);
 int env_remove(t_env **env_head, char *name);
