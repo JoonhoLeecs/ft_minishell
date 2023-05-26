@@ -6,11 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 21:10:43 by joonhlee          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2023/05/25 18:19:02 by joonhlee         ###   ########.fr       */
-=======
-/*   Updated: 2023/05/25 17:38:53 by joonhlee         ###   ########.fr       */
->>>>>>> b0ec81f67b82ae47ca62bc5513d4c0b8c705f509
+/*   Updated: 2023/05/25 18:42:19 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,8 +253,9 @@ int	ft_exit(t_cmd *cmd, int exit_code)
 	if (ft_strcmp(cmd->argv[1], a) != 0)
 	{
 		ft_putstr_fd("exit\n", STDERR_FILENO);
-		ft_putstr_fd("bash: exit: %s: numeric argument required\n",
-			cmd->argv[1], STDERR_FILENO);
+		ft_putstr_fd("bash: exit: ", STDERR_FILENO);
+		ft_putstr_fd(cmd->argv[1], STDERR_FILENO);
+		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
 		free(a);
 		exit(255);
 	}
@@ -273,24 +270,6 @@ int	ft_exit(t_cmd *cmd, int exit_code)
 		}
 		else
 			exit(n % 256);
-<<<<<<< HEAD
-	}
-}
-
-int	is_valid_name(char *str)
-{
-	int	i;
-
-	if (str[0] == '\0' || !(ft_isalpha(str[0]) || str[0] == '_'))
-		return (0);
-	i = 1;
-	while (str[i])
-	{
-		if (!(ft_isalnum(str[i]) || str[i] == '_'))
-			return (0);
-		i++;
-=======
->>>>>>> b0ec81f67b82ae47ca62bc5513d4c0b8c705f509
 	}
 	return (1);
 }

@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 08:37:24 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/24 20:55:53 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/26 09:14:21 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,10 +161,13 @@ int	child(t_cmd *cmd, t_env **env_head)
 		return (perror_return("malloc", 1));
 	if (execve(cmd->cmd_path, cmd->argv, envp) == -1)
 	{
-		free_double_ptr(cmd->argv);
+		// free_double_ptr(cmd->argv);
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
-		perror("cmd");
+		// perror("cmd");
+		ft_putstr_fd("bash: ", STDERR_FILENO);
+		ft_putstr_fd(cmd->cmd_path, STDERR_FILENO);
+		ft_putstr_fd("command not found\n", STDERR_FILENO);
 		return (127);
 	}
 	return (0);
