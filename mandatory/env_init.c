@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 17:12:35 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/24 18:03:57 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/29 11:16:18 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ t_env	*new_env_node(char *name, char *value, t_env *prev)
 	t_env	*node;
 
 	node = (t_env *)malloc(sizeof(t_env));
+	if (node == NULL)
+		exit (EXIT_FAILURE);
 	node->name = name;
 	node->value = value;
 	node->next = NULL;
@@ -52,10 +54,14 @@ char	*env_find_name(char *envp)
 	if (ptr == NULL)
 	{
 		result = ft_strdup(envp);
+		if (result == NULL)
+			exit (EXIT_FAILURE);
 		return (result);
 	}
 	len = ptr - envp;
 	result = ft_substr(envp, 0, len);
+	if (result == NULL)
+		exit (EXIT_FAILURE);
 	return (result);
 }
 
@@ -68,6 +74,8 @@ char	*env_find_value(char *envp)
 	if (ptr == NULL)
 		return (NULL);
 	result = ft_strdup(ptr + 1);
+	if (result == NULL)
+		exit (EXIT_FAILURE);
 	return (result);
 }
 

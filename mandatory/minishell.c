@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:34:03 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/24 10:57:32 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/26 10:25:36 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,25 +18,21 @@ int	main(int argc, char **argv, char **envp)
 	struct sigaction	act;
 	char				*line;
 
+	// argv[1] = NULL if argc == 0 why?
 	if (argc != 1 || argv[1] != 0)
-		return (1);
+		return (126);
 	ft_bzero(&act, sizeof(act));
 	act.__sigaction_u.__sa_handler = &sig_handle;
 	sigaction(SIGINT, &act, NULL);
 	env_head = env_list_init(envp, NULL, NULL, NULL);
-	//test_print_env(env_head);
 	while (1)
 	{
 		line = readline("minishell> ");
 		if (line == 0)
 		{
 			list_free(env_head);
-			return (1);
-		}
-		if (ft_strcmp(line, "exit") == 0)
-		{
-			list_free(env_head);
-			return (0);
+			free(line);
+			exit (1);
 		}
 		if (line && *line)
 			add_history(line);

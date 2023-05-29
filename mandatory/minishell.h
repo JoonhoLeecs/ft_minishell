@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/25 15:23:10 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/26 21:10:43 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,8 @@ typedef struct s_here
 	struct s_here	*next;
 }					t_here;
 
+int	exit_status;
+
 t_env	*new_env_node(char *name, char *value, t_env *prev);
 void	split_name_value(char *envp, char **name, char **value);
 char *env_find_name(char *envp);
@@ -101,18 +103,19 @@ t_cmd *new_cmd_node(void);
 t_here *repeat_heredocs(t_cmd *cmd_head);
 t_here *do_a_heredoc(char *limiter);
 char *nexist_name(void);
-void write_heredoc(int fd, char *limiter_nl);
-t_here *free_n_return(char *str);
+void write_heredoc(int fd, char *limiter);
+t_here *free_n_return(char *str, int exit_code);
 t_here *clear_here_n_return(t_here *here_head);
 void here_add_bottom(t_here **here_head, t_here *here_doc);
 void update_redirs(t_token *redirs, t_here *here_doc);
 
 int exec_cmds(t_cmd *cmd_head, t_env **env_head);
 int open_pipe(t_cmd *cmd);
+int only_builtin_child(t_cmd *cmd, t_env **env_head);
 int child(t_cmd *cmd, t_env **env_head);
 char **words_lst_to_arr(t_cmd *cmd);
 char *find_cmd_path(char *cmd, char **envp);
-char **find_path_env(char **envp, char **cmd);
+char **find_path_env(char **envp);
 char *check_cmd_path(char *cmd, char **dirs);
 void free_double_ptr(char **ptr);
 int parent(int pid, t_cmd *cmd_head);
@@ -125,6 +128,7 @@ void arr2d_free(char **arr);
 
 int is_builtin(char *cmd);
 int run_builtin(t_cmd *cmd, t_env **env_head);
+int run_only_builtin(t_cmd *cmd, t_env **env_head);
 int ft_echo(char **argv);
 int ft_cd(t_cmd *cmd, t_env *env_head);
 int ft_pwd(void);

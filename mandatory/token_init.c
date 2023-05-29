@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 14:27:07 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/22 11:43:51 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/26 10:31:11 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ t_token	*token_list_init(char *str, t_token *token_head, \
 	int				i;
 
 	split = ft_split(str, ' ');
+	if (split == NULL)
+		exit (1);
 	i = 0;
 	while (split[i] != NULL)
 	{

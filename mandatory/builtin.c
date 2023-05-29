@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 21:10:43 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/25 18:42:19 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/29 11:31:38 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 int	is_builtin(char *cmd)
 {
+	if (cmd == NULL)
+		return (0);
 	if (ft_strcmp(cmd, "echo") == 0)
 		return (1);
 	else if (ft_strcmp(cmd, "cd") == 0)
@@ -55,6 +57,29 @@ int	run_builtin(t_cmd *cmd, t_env **env_head)
 	exit (check);
 }
 
+int	run_only_builtin(t_cmd *cmd, t_env **env_head)
+{
+	int	check;
+	// test_print_cmds(cmd);
+	check = 0;
+	if (ft_strcmp(cmd->cmd_path, "echo") == 0)
+		check = ft_echo(cmd->argv);
+	else if (ft_strcmp(cmd->cmd_path, "cd") == 0)
+		check = ft_cd(cmd, *env_head);
+	else if (ft_strcmp(cmd->cmd_path, "pwd") == 0)
+		check = ft_pwd();
+	else if (ft_strcmp(cmd->cmd_path, "export") == 0)
+		check = ft_export(cmd, *env_head);
+	else if (ft_strcmp(cmd->cmd_path, "unset") == 0)
+		check = ft_unset(cmd, env_head);
+	else if (ft_strcmp(cmd->cmd_path, "env") == 0)
+		check = ft_env(*env_head);
+	else if (ft_strcmp(cmd->cmd_path, "exit") == 0)
+		check = ft_exit(cmd, 0);
+	exit_status = check;
+	return (check);
+}
+
 int	ft_echo(char **argv)
 {
 	int	i;
@@ -71,12 +96,12 @@ int	ft_echo(char **argv)
 		{
 			if (argv[i][j] != 'n')
 			{
-				n_option = 0;
+				n_option--;
 				break ;
 			}
 			j++;
 		}
-		if (n_option == 0)
+		if (n_option != i)
 			break ;
 		i++;
 	}
@@ -96,6 +121,7 @@ int	ft_cd(t_cmd *cmd, t_env *env_head)
 {
 	int		check;
 	char	*dest_path;
+	char	*old_path;
 	char	current_path[PATH_MAX];
 
 	if (cmd->argv[1] != NULL && ft_strlen(cmd->argv[1]) == 0)
@@ -122,7 +148,7 @@ int	ft_cd(t_cmd *cmd, t_env *env_head)
 	{
 		dest_path = ft_strdup(cmd->argv[1]);
 		if (dest_path == NULL)
-			return (1);
+			exit (EXIT_FAILURE);
 	}
 	check = chdir(dest_path);
 	if (check == 0 && cmd->argv[1] && ft_strcmp(cmd->argv[1], "-") == 0)
@@ -137,7 +163,9 @@ int	ft_cd(t_cmd *cmd, t_env *env_head)
 	else
 	{
 		getcwd(current_path, PATH_MAX);
-		env_set_value(env_head, "OLDPWD", env_get_value(env_head, "PWD"));
+		old_path = env_get_value(env_head, "PWD");
+		env_set_value(env_head, "OLDPWD", old_path);
+		free (old_path);
 		env_set_value(env_head, "PWD", current_path);
 		free(dest_path);
 		return (0);
@@ -202,17 +230,27 @@ int	ft_export(t_cmd *cmd, t_env *env_head)
 		free(value);
 		i++;
 	}
-	return (1);
+	return (check);
 }
 
 int	ft_unset(t_cmd *cmd, t_env **env_head)
 {
-	int		i;
+	int	i;
+	int	check;
 
 	i = 1;
+	check = 0;
 	while (cmd->argv[i])
 	{
-		env_remove(env_head, cmd->argv[i]);
+		if (is_valid_name(cmd->argv[i]) == 0)
+		{
+			ft_putstr_fd("minishell: unset: '", STDERR_FILENO);
+			ft_putstr_fd(cmd->argv[i], STDERR_FILENO);
+			ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
+			check = 1;
+		}
+		else
+			env_remove(env_head, cmd->argv[i]);
 		i++;
 	}
 	return (0);
@@ -245,11 +283,13 @@ int	ft_exit(t_cmd *cmd, int exit_code)
 	i = 1;
 	if (cmd->argv[i] == NULL)
 	{
-		printf("exit\n");
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 		exit(exit_code);
 	}
 	n = ft_atoi(cmd->argv[1]);
 	a = ft_itoa(n);
+	if (a == NULL)
+		exit (EXIT_FAILURE);
 	if (ft_strcmp(cmd->argv[1], a) != 0)
 	{
 		ft_putstr_fd("exit\n", STDERR_FILENO);
@@ -271,7 +311,7 @@ int	ft_exit(t_cmd *cmd, int exit_code)
 		else
 			exit(n % 256);
 	}
-	return (1);
+	return (0);
 }
 
 int	is_valid_name(char *str)
@@ -294,17 +334,22 @@ int	env_set_value(t_env *env_head, char *name, char *value)
 {
 	t_env	*env_iter;
 	t_env	*new;
+	char	*new_value;
 
+	new_value = NULL;
+	if (value != NULL)
+	{
+		new_value = ft_strdup(value);
+		if (new_value == NULL)
+			exit (EXIT_FAILURE);
+	}
 	env_iter = env_head;
 	while (env_iter)
 	{
 		if (strcmp(env_iter->name, name) == 0)
 		{
 			free(env_iter->value);
-			if (value != NULL)
-				env_iter->value = ft_strdup(value);
-			else
-				env_iter->value = NULL;
+			env_iter->value = new_value;
 			return (0);
 		}
 		if (env_iter->next == NULL)
@@ -312,9 +357,9 @@ int	env_set_value(t_env *env_head, char *name, char *value)
 		env_iter = env_iter->next;
 	}
 	name = ft_strdup(name);
-	if (value != NULL)
-		value = ft_strdup(value);
-	new = new_env_node(name, value, env_iter);
+	if (name == NULL)
+		exit (EXIT_FAILURE);
+	new = new_env_node(name, new_value, env_iter);
 	env_iter->next = new;
 	return (0);
 }
@@ -332,6 +377,8 @@ char	*env_get_value(t_env *env_head, char *name)
 			if (env_iter->value == NULL)
 				return (NULL);
 			result = ft_strdup(env_iter->value);
+			if (result == NULL)
+				exit (EXIT_FAILURE);
 			return (result);
 		}
 		env_iter = env_iter->next;
@@ -345,6 +392,8 @@ int	env_remove(t_env **env_head, char *name)
 	t_env	*env_to_clear;
 
 	env_to_clear = NULL;
+	if (*env_head == NULL)
+		return (0);
 	if (strcmp((*env_head)->name, name) == 0)
 	{
 		env_to_clear = *env_head;
@@ -352,7 +401,7 @@ int	env_remove(t_env **env_head, char *name)
 		(*env_head)->prev = NULL;
 	}
 	env_iter = *env_head;
-	while (env_iter && env_iter->next)
+	while (env_iter->next)
 	{
 		if (strcmp(env_iter->next->name, name) == 0)
 		{
