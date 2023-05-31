@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 08:37:24 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/29 12:00:00 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/29 14:13:00 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,19 @@ int	only_builtin_child(t_cmd *cmd, t_env **env_head)
 		return (perror_return("minishell:", 1));
 	}
 	token_iter = cmd->redirs;
+	fd = 0;
 	while (token_iter)
 	{
+		if (token_iter->type == AERROR)
+		{
+			dup2(std_fd[0], STDIN_FILENO);
+			close(std_fd[0]);
+			dup2(std_fd[1], STDOUT_FILENO);
+			close(std_fd[1]);
+			ft_putstr_fd("minishell: ", STDERR_FILENO);
+			ft_putstr_fd(token_iter->str, STDERR_FILENO);
+			return (perror_return("ambiguous redirect", 1));
+		}
 		if (token_iter->type == INFILE)
 			fd = open(token_iter->str, O_RDONLY);
 		else if (token_iter->type == OUTFILE)
@@ -114,7 +125,8 @@ int	only_builtin_child(t_cmd *cmd, t_env **env_head)
 			close(std_fd[0]);
 			dup2(std_fd[1], STDOUT_FILENO);
 			close(std_fd[1]);
-			return (perror_return("minishell:", 1));
+			ft_putstr_fd("minishell: ", STDERR_FILENO);
+			return (perror_return(token_iter->str, 1));
 		}
 		if (token_iter->type == INFILE)
 			dup2(fd, STDIN_FILENO);
@@ -152,30 +164,28 @@ int	child(t_cmd *cmd, t_env **env_head)
 	token_iter = cmd->redirs;
 	while (token_iter)
 	{
+		if (token_iter->type == AERROR)
+		{
+			ft_putstr_fd("minishell: ", STDERR_FILENO);
+			ft_putstr_fd(token_iter->str, STDERR_FILENO);
+			exit (perror_return("ambiguous redirect", 1));
+		}
 		if (token_iter->type == INFILE)
-		{
 			fd = open(token_iter->str, O_RDONLY);
-			if (fd == -1)
-				exit (perror_return("minishell:", 1));
-			dup2(fd, STDIN_FILENO);
-			close(fd);
-		}
 		else if (token_iter->type == OUTFILE)
-		{
 			fd = open(token_iter->str, O_WRONLY | O_TRUNC | O_CREAT, 0644);
-			if (fd == -1)
-				exit (perror_return("minishell:", 1));
-			dup2(fd, STDOUT_FILENO);
-			close(fd);
-		}
 		else if (token_iter->type == APPEND)
-		{
 			fd = open(token_iter->str, O_WRONLY | O_APPEND | O_CREAT, 0644);
-			if (fd == -1)
-				exit (perror_return("minishell:", 1));
-			dup2(fd, STDOUT_FILENO);
-			close(fd);
+		if (fd == -1)
+		{
+			ft_putstr_fd("minishell: ", STDERR_FILENO);
+			exit (perror_return(token_iter->str, 1));
 		}
+		if (token_iter->type == INFILE)
+			dup2(fd, STDIN_FILENO);
+		else if (token_iter->type == OUTFILE || token_iter->type == APPEND)
+			dup2(fd, STDOUT_FILENO);
+		close(fd);
 		token_iter = token_iter->next;
 	}
 	cmd->argv = words_lst_to_arr(cmd);

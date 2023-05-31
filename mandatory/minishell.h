@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/26 21:10:43 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/31 17:07:28 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,13 @@
 # include <stdlib.h>
 # include <signal.h>
 # include <limits.h>
-# include <errno.h>
+# include <termios.h>
 # include "libft.h"
 # include "readline.h"
 # include "history.h"
+
+
+typedef struct termios	t_termios;
 
 typedef struct s_env_set
 {
@@ -51,6 +54,7 @@ typedef enum e_token_type
 	OUTFILE,	// content "outfile" meaning "> outfile"
 	HEREDOC,	// content "limiter" meaning "<< limiter"
 	APPEND,		// content "outfile2 meaning ">> outfile2"
+	AERROR,		// ambiguous redirect happened
 }	t_token_type;
 
 typedef struct s_token
@@ -81,6 +85,12 @@ typedef struct s_here
 	struct s_here	*next;
 }					t_here;
 
+typedef struct s_quotes
+{
+	int detect;
+	char type;
+} t_quotes;
+
 int	exit_status;
 
 t_env	*new_env_node(char *name, char *value, t_env *prev);
@@ -89,8 +99,11 @@ char *env_find_name(char *envp);
 char *env_find_value(char *envp);
 t_env	*env_list_init(char **envp, t_env *env_head, t_env *temp, t_env *new);
 
-void sig_handle(int signum);
-
+void signal_setup(void);
+void ctrl_c_handler(int signum);
+void ctrl_d_handler(t_env *env_head, char *line);
+void here_signal_setup(void);
+void here_ctrl_c_handler(int signum);
 int shell_op(char *line, t_env **env_head);
 
 t_token *token_list_init(char *str, t_token *token_head, t_token *temp, t_token *new);
@@ -140,6 +153,11 @@ int is_valid_name(char *str);
 int env_set_value(t_env *env_head, char *name, char *value);
 char *env_get_value(t_env *env_head, char *name);
 int env_remove(t_env **env_head, char *name);
+
+int unquote(t_token *token_head);
+char *unquote_a_str(char *str);
+int find_n_of_quotes(char *str);
+int check_quotes2(char s, t_quotes *q);
 
 void test_print_env(t_env *env_head);
 void test_print_tokens(t_token *token_head);

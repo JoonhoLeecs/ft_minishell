@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 14:27:07 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/26 10:31:11 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/29 14:12:39 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,8 @@ void	merge_redir(t_token **token_head)
 				token_iter->next->str, NULL);
 		*token_head = new;
 		new->next = token_iter->next->next;
-		token_iter->next->next->prev = new;
+		if (token_iter->next->next)
+			token_iter->next->next->prev = new;
 		free(token_iter->next->str);
 		free(token_iter->next);
 		free(token_iter->str);

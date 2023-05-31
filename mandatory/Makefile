@@ -26,6 +26,7 @@ $(LIBFT_DIR)libft.h \
 ../readline/include/readline/history.h
 
 INCLUDES = -I../readline/include/readline -I../libft
+# -I../getnextline
 
 MANDATORY_SRCS = \
 minishell.c \
@@ -37,7 +38,10 @@ shell_op.c \
 parser.c \
 heredoc.c \
 find_cmd_path.c \
-builtin.c
+builtin.c \
+unquote.c
+# ../getnextline/get_next_line.c \
+# ../getnextline/get_next_line_utils.c
 
 MANDATORY_OBJS = $(MANDATORY_SRCS:.c=.o)
 
