@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:34:03 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/31 18:22:05 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 11:43:33 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		line = readline("minishell> ");
-		// printf("main 32:%d|%s\n", exit_status, line);
+		// printf("main 32:%d|%s\n", g_exit_status, line);
 
 		if (line == 0)
 			ctrl_d_handler(env_head, line);
@@ -123,8 +123,8 @@ void	here_ctrl_c_handler(int signum)
 	// close(pfd[0]);
 	// rl_done = 1;
 	// printf("here handler 127\n");
-	exit_status = -1;
-	ft_putstr_fd("\n", STDOUT_FILENO);
+	g_exit_status = -1;
+	ft_putstr_fd("\n(press enter)\n", STDOUT_FILENO);
 	rl_on_new_line();
 	// close(STDIN_FILENO);
 	// dup2(std_fd, STDIN_FILENO);

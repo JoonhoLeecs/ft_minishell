@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 21:10:43 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/29 11:31:38 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 08:45:10 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ int	run_only_builtin(t_cmd *cmd, t_env **env_head)
 		check = ft_env(*env_head);
 	else if (ft_strcmp(cmd->cmd_path, "exit") == 0)
 		check = ft_exit(cmd, 0);
-	exit_status = check;
+	g_exit_status = check;
 	return (check);
 }
 

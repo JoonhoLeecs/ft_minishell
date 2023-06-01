@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/27 13:32:16 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/06/01 08:21:32 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 08:47:22 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ t_here	*repeat_heredocs(t_cmd *cmd_head)
 	while (cmd_iter)
 	{
 		redirs_iter = cmd_iter->redirs;
-		while (redirs_iter && exit_status > -1)
+		while (redirs_iter && g_exit_status > -1)
 		{
 			if (redirs_iter->type == HEREDOC)
 			{
@@ -41,8 +41,8 @@ t_here	*repeat_heredocs(t_cmd *cmd_head)
 		cmd_iter = cmd_iter->next;
 	}
 	signal_setup();
-	if (exit_status < 0)
-		exit_status = 1;
+	if (g_exit_status < 0)
+		g_exit_status = 1;
 	return (here_head);
 }
 
@@ -55,7 +55,7 @@ t_here	*do_a_heredoc(char *limiter)
 	here_filename = nexist_name();
 	if (here_filename == NULL)
 	{
-		exit_status = 1;
+		g_exit_status = 1;
 		return (NULL);
 	}
 	fd = open(here_filename, O_WRONLY | O_TRUNC | O_CREAT, 0644);
@@ -102,11 +102,11 @@ void	write_heredoc(int fd, char *limiter)
 	char	*line;
 	// char	*limiter_nl;
 
-	while (1 && exit_status > -1)
+	while (1 && g_exit_status > -1)
 	{
 		line = readline("> ");
-		// printf("write heredoc 108:%d|%s\n", exit_status, line);
-		if (exit_status < 0)
+		// printf("write heredoc 108:%d|%s\n", g_exit_status, line);
+		if (g_exit_status < 0)
 			break ;
 		if (line == NULL)
 			break ;
@@ -121,11 +121,11 @@ void	write_heredoc(int fd, char *limiter)
 	// limiter_nl = ft_strjoin(limiter, "\n");
 	// if (limiter_nl == NULL)
 	// 	exit (1);
-	// while (1 && exit_status > -1)
+	// while (1 && g_exit_status > -1)
 	// {
 	// 	ft_putstr_fd("> ", STDOUT_FILENO);
 	// 	line = get_next_line(STDIN_FILENO);
-	// 	// printf("write heredoc 108:%d|%s\n", exit_status, line);
+	// 	// printf("write heredoc 108:%d|%s\n", g_exit_status, line);
 	// 	if (ft_strcmp(line, "") == 0 || ft_strcmp(line, "\n") == 0)
 	// 		break ;
 	// 	if (ft_strcmp(line, limiter_nl) == 0)
@@ -142,7 +142,7 @@ void	write_heredoc(int fd, char *limiter)
 t_here	*free_n_return(char *str, int exit_code)
 {
 	free(str);
-	exit_status = exit_code;
+	g_exit_status = exit_code;
 	return (NULL);
 }
 

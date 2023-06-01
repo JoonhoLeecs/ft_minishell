@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 08:37:24 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/29 14:13:00 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 14:19:38 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,14 @@ int	shell_op(char *line, t_env **env_head)
 	cmd_head = parser(token_head, *env_head);
 	if (cmd_head == NULL)
 		return (1);
-	exit_status = 0;
+	g_exit_status = 0;
 	// execute here_docs and replace them into input redirection with heredocs
 	// also save here_doc filename as list to unlink in the future as return value
 	here_head = NULL;
-	if (exit_status == 0)
+	if (g_exit_status == 0)
 		here_head = repeat_heredocs(cmd_head);
 	exit_code = 0;
-	if (exit_status == 0)
+	if (g_exit_status == 0)
 		exit_code = exec_cmds(cmd_head, env_head);
 		// redirections, execution with forks are performed below
 	clear_this_line(cmd_head, here_head);
@@ -50,8 +50,9 @@ int	exec_cmds(t_cmd *cmd_head, t_env **env_head)
 	cmd_iter = cmd_head;
 	while (cmd_iter)
 	{
-		if (cmd_iter->next != NULL)
-			if (open_pipe(cmd_iter) == -1)
+		// printf("shell_op:52|cmd %s\n", cmd_iter->words->str);
+		if (cmd_iter->next != NULL || cmd_iter->prev != NULL)
+			if (manage_pipe(cmd_iter) == -1)
 				return (perror_return("minishell: pipe", 1));
 		if (cmd_iter->prev == NULL && cmd_iter->next == NULL
 			&& cmd_iter->words != NULL
@@ -68,15 +69,27 @@ int	exec_cmds(t_cmd *cmd_head, t_env **env_head)
 	return (parent(pid, cmd_head));
 }
 
-int	open_pipe(t_cmd *cmd)
+int	manage_pipe(t_cmd *cmd)
 {
 	int	check;
 
-	check = pipe(cmd->next_pfd);
-	if (check == -1)
-		return (check);
-	cmd->next->prev_pfd[0] = cmd->next_pfd[0];
-	cmd->next->prev_pfd[1] = cmd->next_pfd[1];
+	if (cmd->prev != NULL && cmd->prev->prev_pfd[0] != -1)
+	{
+		close(cmd->prev->prev_pfd[0]);
+		close(cmd->prev->prev_pfd[1]);
+		cmd->prev->prev_pfd[0] = -1;
+		cmd->prev->prev->next_pfd[0] = -1;
+		cmd->prev->prev_pfd[1] = -1;
+		cmd->prev->prev->next_pfd[1] = -1;
+	}
+	if (cmd->next != NULL)
+	{
+		check = pipe(cmd->next_pfd);
+		if (check == -1)
+			return (check);
+		cmd->next->prev_pfd[0] = cmd->next_pfd[0];
+		cmd->next->prev_pfd[1] = cmd->next_pfd[1];
+	}
 	return (0);
 }
 
@@ -151,12 +164,14 @@ int	child(t_cmd *cmd, t_env **env_head)
 
 	if (cmd->prev != NULL)
 	{
+		// ft_putendl_fd("shellop_child:164", STDERR_FILENO);
 		close(cmd->prev_pfd[1]);
 		dup2(cmd->prev_pfd[0], STDIN_FILENO);
 		close(cmd->prev_pfd[0]);
 	}
 	if (cmd->next != NULL)
 	{
+		// ft_putendl_fd("shellop_child:171", STDERR_FILENO);
 		close(cmd->next_pfd[0]);
 		dup2(cmd->next_pfd[1], STDOUT_FILENO);
 		close(cmd->next_pfd[1]);
@@ -170,12 +185,15 @@ int	child(t_cmd *cmd, t_env **env_head)
 			ft_putstr_fd(token_iter->str, STDERR_FILENO);
 			exit (perror_return("ambiguous redirect", 1));
 		}
-		if (token_iter->type == INFILE)
+		else if (token_iter->type == INFILE)
 			fd = open(token_iter->str, O_RDONLY);
 		else if (token_iter->type == OUTFILE)
 			fd = open(token_iter->str, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 		else if (token_iter->type == APPEND)
 			fd = open(token_iter->str, O_WRONLY | O_APPEND | O_CREAT, 0644);
+		// else
+		// 	printf("sadlfk");
+
 		if (fd == -1)
 		{
 			ft_putstr_fd("minishell: ", STDERR_FILENO);
@@ -197,8 +215,11 @@ int	child(t_cmd *cmd, t_env **env_head)
 	if (envp == 0)
 		exit (perror_return("malloc", 1));
 	cmd->cmd_path = find_cmd_path(cmd->argv[0], envp);
+	// ft_putstr_fd("shell_op:208|cmd_path:", 2);
+	// ft_putendl_fd(cmd->cmd_path, 2);
 	if (execve(cmd->cmd_path, cmd->argv, envp) == -1)
 	{
+		// printf("shell_op:203|cmd_path:%s\n", cmd->cmd_path);
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		ft_putstr_fd("minishell: ", STDERR_FILENO);
@@ -218,28 +239,38 @@ int	parent(int pid, t_cmd *cmd_head)
 
 	n_cmd = 0;
 	cmd_iter = cmd_head;
+	// printf("shell_op:222|exitstatus:%d\n", g_exit_status);
 	while (cmd_iter)
 	{
-		if (cmd_iter->prev_pfd[0] != -1)
-		{
-			close(cmd_iter->prev_pfd[0]);
-			close(cmd_iter->prev_pfd[1]);
-		}
+		// printf("shell_op:237|pfd:%d|%d|%d|%d\n", cmd_iter->prev_pfd[0], cmd_iter->prev_pfd[1], cmd_iter->next_pfd[0], cmd_iter->next_pfd[1]);
+		// if (cmd_iter->prev_pfd[0] != -1)
+		// {
+		// 	close(cmd_iter->prev_pfd[0]);
+		// 	close(cmd_iter->prev_pfd[1]);
+		// }
 		if (cmd_iter->next_pfd[0] != -1)
 		{
 			close(cmd_iter->next_pfd[0]);
 			close(cmd_iter->next_pfd[1]);
+			cmd_iter->next_pfd[0] = -1;
+			cmd_iter->next_pfd[1] = -1;
 		}
 		n_cmd++;
 		cmd_iter = cmd_iter->next;
 	}
-	while (n_cmd-- > 0)
+	cmd_iter = cmd_head;
+	// printf("shell_op:238|exitstatus:%d|n_cmd:%d\n", g_exit_status, n_cmd);
+	while (n_cmd > 0)
 	{
+		// printf("shell_op:254|n_cmd:%d\n", n_cmd);
 		wpid = wait(&status);
 		if (wpid == pid && WIFEXITED(status))
-			exit_status = WEXITSTATUS(status);
+			g_exit_status = WEXITSTATUS(status);
+		n_cmd--;
+		// printf("shell_op:252|wpid%d\n", wpid);
 	}
-	return (exit_status);
+	// printf("shell_op:243|exitstatus:%d\n", g_exit_status);
+	return (g_exit_status);
 }
 
 char	**words_lst_to_arr(t_cmd *cmd)
@@ -309,7 +340,7 @@ void	clear_this_line(t_cmd *cmd_head, t_here *here_head)
 
 int	perror_return(char *str, int exit_code)
 {
-	exit_status = exit_code;
+	g_exit_status = exit_code;
 	perror(str);
 	return (exit_code);
 }

@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:35:13 by woosekim          #+#    #+#             */
-/*   Updated: 2023/05/31 17:07:28 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 14:19:53 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,14 @@
 # include "readline.h"
 # include "history.h"
 
-
 typedef struct termios	t_termios;
 
-typedef struct s_env_set
-{
-	int				number;
-	struct s_env	*head;
-	struct s_env	*tail;
-}					t_env_set;
+// typedef struct s_env_set
+// {
+// 	int				number;
+// 	struct s_env	*head;
+// 	struct s_env	*tail;
+// }					t_env_set;
 
 typedef struct s_env
 {
@@ -87,11 +86,19 @@ typedef struct s_here
 
 typedef struct s_quotes
 {
-	int detect;
-	char type;
-} t_quotes;
+	int		detect;
+	char	type;
+}			t_quotes;
 
-int	exit_status;
+typedef struct s_exp
+{
+	char	*str;
+	int		div;
+	struct	s_exp *next;
+}			t_exp;
+
+// int	exit_status;
+int g_exit_status;
 
 t_env	*new_env_node(char *name, char *value, t_env *prev);
 void	split_name_value(char *envp, char **name, char **value);
@@ -123,7 +130,7 @@ void here_add_bottom(t_here **here_head, t_here *here_doc);
 void update_redirs(t_token *redirs, t_here *here_doc);
 
 int exec_cmds(t_cmd *cmd_head, t_env **env_head);
-int open_pipe(t_cmd *cmd);
+int manage_pipe(t_cmd *cmd);
 int only_builtin_child(t_cmd *cmd, t_env **env_head);
 int child(t_cmd *cmd, t_env **env_head);
 char **words_lst_to_arr(t_cmd *cmd);

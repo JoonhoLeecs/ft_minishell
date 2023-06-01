@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 08:08:57 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/26 21:31:50 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/01 08:46:56 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ char	*find_cmd_path(char *cmd, char **envp)
 		return (cmd_path);
 	}
 	dirs = find_path_env(envp);
-	if (exit_status != 0)
+	if (g_exit_status != 0)
 	{
 		cmd_path = ft_strdup(cmd);
 		if (cmd_path == NULL)
@@ -53,7 +53,7 @@ char	**find_path_env(char **envp)
 			return (dirs);
 		}
 	}
-	exit_status = 127;
+	g_exit_status = 127;
 	return (NULL);
 }
 
