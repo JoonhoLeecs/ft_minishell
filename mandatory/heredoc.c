@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/27 13:32:16 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/06/09 08:55:07 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/21 10:32:23 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,22 +120,20 @@ void	write_heredoc(int fd, char *limiter, t_env *env_head)
 	char	*line;
 	char	*expanded_line;
 
-	limiter = ft_strjoin(limiter, "\n");
-	if (limiter == NULL)
-		exit (1);
 	while (1 && g_exit_status > -1)
 	{
 		ft_putstr_fd("> ", STDOUT_FILENO);
 		line = get_next_line(STDIN_FILENO);
+		if (line != NULL && *line != '\0' && line[ft_strlen(line) - 1] == '\n')
+			line[ft_strlen(line) - 1] = '\0';
 		if (g_exit_status < 0 || line == NULL || ft_strcmp(line, limiter) == 0)
 		{
 			free(line);
 			break ;
 		}
 		expanded_line = exp_str_to_str(line, env_head);
-		ft_putstr_fd(expanded_line, fd);
+		ft_putendl_fd(expanded_line, fd);
 		free(expanded_line);
 		free(line);
 	}
-	free(limiter);
 }

@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 08:08:57 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/06/01 21:13:14 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/06/21 10:27:09 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ char	*find_cmd_path(char *cmd, char **envp)
 	char	**dirs;
 	char	*cmd_path;
 
-	if (ft_strchr(cmd, '\\') != 0)
+	if (ft_strchr(cmd, '/') != 0)
 	{
 		cmd_path = ft_strdup(cmd);
 		if (cmd_path == NULL)
